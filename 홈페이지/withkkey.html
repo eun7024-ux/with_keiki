@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>위드케이키 — WithKKey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@200;300;400;600&family=Noto+Sans+KR:wght@200;300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ivory:   #FAF8F4;
+  --ivory2:  #F4F1EB;
+  --ivory3:  #EDE9E0;
+  --charcoal:#2C2C2C;
+  --mid:     #6B6B6B;
+  --faint:   #ABABAB;
+  --rule:    #E0DDD6;
+  --lav:     #C4AEDC;
+  --lav-lt:  #EDE8F7;
+  --blush:   #E0B8C8;
+  --blush-lt:#FAF0F4;
+  --sage:    #8ABAA8;
+  --sage-lt: #E6F2EE;
+  --gold:    #C8A96A;
+  --grad: linear-gradient(120deg, #C4AEDC 0%, #E0B8C8 50%, #8ABAA8 100%);
+}
+html { scroll-behavior: smooth; }
+body { font-family:'Noto Sans KR',sans-serif; background:var(--ivory); color:var(--charcoal); overflow-x:hidden; line-height:1.7; }
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:var(--ivory2); }
+::-webkit-scrollbar-thumb { background:var(--faint); border-radius:2px; }
+
+/* NAV */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:200;
+  background:rgba(250,248,244,0.92); backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--rule);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 4rem; height:68px;
+}
+.nav-logo img { height:32px; display:block; }
+.nav-center { position:absolute; left:50%; transform:translateX(-50%); }
+.nav-links { display:flex; gap:2.5rem; list-style:none; }
+.nav-links a { font-size:0.7rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--mid); text-decoration:none; font-weight:400; transition:color .25s; }
+.nav-links a:hover { color:var(--charcoal); }
+.nav-cta { font-size:0.68rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--charcoal); text-decoration:none; border-bottom:1px solid var(--charcoal); padding-bottom:1px; font-weight:400; transition:color .25s,border-color .25s; }
+.nav-cta:hover { color:var(--lav); border-color:var(--lav); }
+
+/* HERO */
+.hero { min-height:100vh; display:grid; grid-template-columns:1fr 1fr; padding-top:68px; }
+.hero-left {
+  background:var(--ivory2); display:flex; flex-direction:column; justify-content:center;
+  padding:7rem 5rem 7rem 4rem; border-right:1px solid var(--rule); position:relative; overflow:hidden;
+}
+.hero-left::after {
+  content:''; position:absolute; bottom:-100px; left:-100px;
+  width:350px; height:350px; border-radius:50%;
+  background:radial-gradient(circle,rgba(196,174,220,.12) 0%,transparent 70%); pointer-events:none;
+}
+.hero-kicker { font-family:'Cormorant Garamond',serif; font-size:0.8rem; letter-spacing:0.3em; text-transform:uppercase; color:var(--faint); margin-bottom:2.5rem; }
+.hero-title { font-family:'Noto Serif KR',serif; font-size:clamp(2.2rem,4vw,3.8rem); font-weight:200; line-height:1.25; margin-bottom:2rem; }
+.hero-title em { font-style:italic; font-family:'Cormorant Garamond',serif; font-size:1.2em; font-weight:300; background:var(--grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.hero-sub { font-size:0.88rem; color:var(--mid); font-weight:300; line-height:2; max-width:380px; margin-bottom:3rem; }
+.hero-actions { display:flex; align-items:center; gap:1.5rem; }
+.btn-fill { display:inline-block; padding:.85rem 2rem; background:var(--charcoal); color:var(--ivory); font-size:0.68rem; letter-spacing:0.18em; text-transform:uppercase; text-decoration:none; font-weight:400; transition:background .3s; }
+.btn-fill:hover { background:#444; }
+.btn-bare { font-size:0.68rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--mid); text-decoration:none; font-weight:400; transition:color .25s; display:flex; align-items:center; gap:.4rem; }
+.btn-bare:hover { color:var(--charcoal); }
+.btn-bare::after { content:'→'; font-size:.9rem; }
+
+/* Hero right — kkumi character */
+.hero-right {
+  display:flex; align-items:center; justify-content:center;
+  position:relative; background:var(--ivory); overflow:hidden; min-height:500px;
+}
+.hero-right-bg {
+  position:absolute; inset:0;
+  background: radial-gradient(ellipse at 60% 40%, rgba(196,174,220,.13) 0%, transparent 55%),
+              radial-gradient(ellipse at 30% 75%, rgba(138,186,168,.10) 0%, transparent 50%);
+}
+.hero-kkumi-img {
+  position:relative; z-index:1;
+  width:min(340px, 80%);
+  filter: drop-shadow(0 20px 40px rgba(196,174,220,.25));
+  animation: floatY 5s ease-in-out infinite;
+}
+@keyframes floatY { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+.hero-tag { position:absolute; font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--faint); font-weight:400; }
+.hero-tag.top { top:2.5rem; left:2.5rem; }
+.hero-tag.bot { bottom:2.5rem; right:2.5rem; }
+
+/* MARQUEE */
+.marquee-wrap { overflow:hidden; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); padding:.9rem 0; background:var(--ivory2); }
+.marquee-track { display:flex; gap:3rem; animation:marquee 25s linear infinite; white-space:nowrap; }
+.marquee-track span { font-family:'Cormorant Garamond',serif; font-size:.95rem; letter-spacing:.15em; color:var(--faint); font-weight:300; font-style:italic; flex-shrink:0; }
+.marquee-track .dot { color:var(--lav); font-style:normal; font-size:.5rem; }
+@keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+/* BRAND / PHILOSOPHY */
+.philosophy-section { padding:9rem 4rem; max-width:1160px; margin:0 auto; display:grid; grid-template-columns:5fr 6fr; gap:7rem; align-items:center; }
+.section-eyebrow { font-family:'Cormorant Garamond',serif; font-size:.78rem; letter-spacing:.3em; text-transform:uppercase; color:var(--faint); margin-bottom:1.8rem; font-style:italic; }
+.phil-title { font-family:'Noto Serif KR',serif; font-size:clamp(1.7rem,2.8vw,2.5rem); font-weight:200; line-height:1.45; margin-bottom:2rem; }
+.phil-body { font-size:.87rem; color:var(--mid); font-weight:300; line-height:2.1; margin-bottom:1rem; }
+.phil-body:last-child { margin-bottom:0; }
+
+/* Kkumi mirror image in brand section */
+.phil-visual { display:flex; align-items:center; justify-content:center; }
+.phil-kkumi-img {
+  width:100%; max-width:380px;
+  filter: drop-shadow(0 16px 36px rgba(196,174,220,.2));
+  border-radius:16px;
+}
+
+/* PRODUCTS */
+.products-section { background:var(--ivory2); border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); padding:8rem 4rem; }
+.products-section .inner { max-width:1160px; margin:0 auto; }
+.products-header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:5rem; padding-bottom:2.5rem; border-bottom:1px solid var(--rule); }
+.products-title { font-family:'Noto Serif KR',serif; font-size:clamp(1.8rem,3vw,3rem); font-weight:200; line-height:1.25; }
+.products-subtitle { font-size:.78rem; color:var(--faint); font-weight:300; letter-spacing:.08em; text-align:right; max-width:180px; line-height:1.9; }
+.products-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; }
+.product-card { background:var(--ivory); border:1px solid var(--rule); overflow:hidden; transition:box-shadow .4s,transform .4s; }
+.product-card:hover { box-shadow:0 12px 40px rgba(0,0,0,.07); transform:translateY(-3px); }
+
+/* Video header */
+.product-video-wrap {
+  position:relative; overflow:hidden; background:#f0ede6;
+  height:260px; display:flex; align-items:center; justify-content:center;
+}
+.product-video-wrap video {
+  width:100%; height:100%; object-fit:cover; display:block;
+}
+.product-video-wrap.lav-tint { background:var(--lav-lt); }
+.product-video-wrap.sage-tint { background:var(--sage-lt); }
+.product-video-overlay {
+  position:absolute; inset:0;
+  background:linear-gradient(to bottom, transparent 60%, rgba(250,248,244,.15) 100%);
+  pointer-events:none;
+}
+
+.product-body { padding:2.5rem; }
+.product-pill { display:inline-block; font-size:.58rem; letter-spacing:.18em; text-transform:uppercase; color:var(--mid); border:1px solid var(--rule); padding:.28rem .8rem; margin-bottom:1.2rem; font-weight:400; }
+.product-name { font-family:'Noto Serif KR',serif; font-size:1.45rem; font-weight:300; margin-bottom:.35rem; }
+.product-name-en { font-family:'Cormorant Garamond',serif; font-size:.82rem; color:var(--faint); font-weight:400; font-style:italic; letter-spacing:.1em; margin-bottom:1.5rem; }
+.product-desc { font-size:.83rem; color:var(--mid); font-weight:300; line-height:2; margin-bottom:2rem; }
+.product-rule { height:1px; background:var(--rule); margin-bottom:1.5rem; }
+.product-tags { display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:2rem; }
+.tag { font-size:.58rem; letter-spacing:.1em; color:var(--mid); background:var(--ivory2); padding:.3rem .7rem; font-weight:400; border:1px solid var(--rule); }
+.product-link { font-size:.68rem; letter-spacing:.18em; text-transform:uppercase; color:var(--charcoal); text-decoration:none; font-weight:400; display:flex; align-items:center; gap:.5rem; border-bottom:1px solid var(--charcoal); padding-bottom:1px; width:fit-content; transition:color .25s,border-color .25s; }
+.product-link::after { content:'→'; }
+.product-link:hover { color:var(--lav); border-color:var(--lav); }
+
+/* CHANNELS */
+.channels-section { padding:9rem 4rem; max-width:1160px; margin:0 auto; }
+.channels-inner { display:grid; grid-template-columns:1fr 1fr; gap:7rem; align-items:start; }
+.channels-title { font-family:'Noto Serif KR',serif; font-size:clamp(1.6rem,2.8vw,2.6rem); font-weight:200; line-height:1.4; margin-bottom:1.5rem; }
+.channels-text { font-size:.86rem; color:var(--mid); font-weight:300; line-height:2.1; margin-bottom:2.5rem; }
+.channels-stats { display:flex; gap:2.5rem; padding:2rem 0; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); }
+.cstat { display:flex; flex-direction:column; gap:.3rem; }
+.cstat-n { font-family:'Cormorant Garamond',serif; font-size:2.8rem; font-weight:300; line-height:1; background:var(--grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.cstat-l { font-size:.6rem; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); font-weight:400; }
+.channels-list { display:flex; flex-direction:column; }
+.ch-row { display:grid; grid-template-columns:1fr auto; align-items:center; padding:1.1rem 0; border-bottom:1px solid var(--rule); cursor:default; transition:padding-left .3s; }
+.ch-row:first-child { border-top:1px solid var(--rule); }
+.ch-row:hover { padding-left:.6rem; }
+.ch-name { font-family:'Noto Serif KR',serif; font-size:1.05rem; font-weight:300; color:var(--charcoal); transition:color .25s; }
+.ch-row:hover .ch-name { color:var(--lav); }
+.ch-type { font-size:.58rem; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); font-weight:400; }
+.ch-dot { display:inline-block; width:6px; height:6px; border-radius:50%; margin-right:.5rem; vertical-align:middle; }
+.dot-retail { background:var(--lav); }
+.dot-entertainment { background:var(--blush); }
+.dot-b2b { background:var(--sage); }
+.dot-ecom { background:var(--gold); }
+
+/* IMPACT */
+.impact-section { background:var(--ivory2); border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); padding:9rem 4rem; }
+.impact-inner { max-width:760px; margin:0 auto; text-align:center; }
+.impact-tag { font-family:'Cormorant Garamond',serif; font-size:.82rem; letter-spacing:.3em; text-transform:uppercase; color:var(--faint); font-style:italic; margin-bottom:2rem; }
+.impact-title { font-family:'Noto Serif KR',serif; font-size:clamp(2rem,4vw,3.5rem); font-weight:200; line-height:1.3; }
+.impact-title em { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.1em; font-weight:300; background:var(--grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.impact-rule { width:48px; height:1px; background:var(--rule); margin:2.5rem auto; }
+.impact-text { font-size:.88rem; color:var(--mid); font-weight:300; line-height:2.1; margin-bottom:3rem; }
+.impact-badge { display:inline-flex; align-items:center; gap:.7rem; border:1px solid var(--rule); padding:.75rem 1.75rem; font-size:.65rem; letter-spacing:.18em; text-transform:uppercase; color:var(--mid); font-weight:400; background:var(--ivory); }
+.badge-dot { width:6px; height:6px; border-radius:50%; background:var(--lav); }
+
+/* CONTACT */
+.contact-section { padding:9rem 4rem; max-width:1160px; margin:0 auto; display:grid; grid-template-columns:5fr 6fr; gap:7rem; align-items:start; }
+.contact-title { font-family:'Noto Serif KR',serif; font-size:clamp(1.7rem,3vw,2.8rem); font-weight:200; line-height:1.4; margin-bottom:1.5rem; }
+.contact-sub { font-size:.85rem; color:var(--mid); font-weight:300; line-height:2; margin-bottom:2.5rem; }
+.contact-email { font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:400; font-style:italic; color:var(--charcoal); text-decoration:none; border-bottom:1px solid var(--rule); padding-bottom:2px; transition:border-color .25s; }
+.contact-email:hover { border-color:var(--lav); }
+.contact-links { display:flex; flex-direction:column; }
+.contact-link { display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:1rem; padding:1.3rem 0; border-bottom:1px solid var(--rule); text-decoration:none; transition:padding-left .3s; }
+.contact-link:first-child { border-top:1px solid var(--rule); }
+.contact-link:hover { padding-left:.5rem; }
+.contact-link-label { font-size:.6rem; letter-spacing:.18em; text-transform:uppercase; color:var(--faint); font-weight:400; }
+.contact-link-val { font-family:'Cormorant Garamond',serif; font-size:1rem; color:var(--charcoal); font-weight:400; font-style:italic; transition:color .25s; }
+.contact-link:hover .contact-link-val { color:var(--lav); }
+.contact-link-arr { font-size:.85rem; color:var(--faint); transition:transform .3s,color .3s; }
+.contact-link:hover .contact-link-arr { transform:translate(3px,-3px); color:var(--lav); }
+
+/* FOOTER */
+footer { border-top:1px solid var(--rule); padding:2.2rem 4rem; background:var(--ivory2); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; }
+.footer-logo img { height:24px; opacity:.5; }
+.footer-mid { font-size:.62rem; letter-spacing:.1em; color:var(--faint); font-weight:400; text-align:center; }
+.footer-right { display:flex; gap:2rem; }
+.footer-right a { font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); text-decoration:none; font-weight:400; transition:color .25s; }
+.footer-right a:hover { color:var(--charcoal); }
+
+/* RESPONSIVE */
+@media (max-width:900px) {
+  nav { padding:0 1.5rem; }
+  .nav-center, .nav-links { display:none; }
+  .hero { grid-template-columns:1fr; min-height:auto; }
+  .hero-left { padding:5rem 1.5rem 4rem; border-right:none; border-bottom:1px solid var(--rule); }
+  .hero-right { min-height:300px; }
+  .philosophy-section, .channels-inner, .contact-section { grid-template-columns:1fr; gap:3rem; padding:5rem 1.5rem; }
+  .products-section { padding:5rem 1.5rem; }
+  .products-header { flex-direction:column; align-items:flex-start; gap:.5rem; margin-bottom:3rem; }
+  .products-grid { grid-template-columns:1fr; }
+  .channels-section { padding:5rem 1.5rem; }
+  .impact-section { padding:6rem 1.5rem; }
+  footer { padding:2rem 1.5rem; flex-direction:column; text-align:center; }
+}
+@media (prefers-reduced-motion:reduce) { *,video { animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <img src="kkummi_logo.png" alt="KKUMMI 로고">
+  </a>
+  <div class="nav-center">
+    <ul class="nav-links">
+      <li><a href="#brand">브랜드</a></li>
+      <li><a href="#products">제품</a></li>
+      <li><a href="#channels">유통</a></li>
+      <li><a href="#impact">임팩트</a></li>
+    </ul>
+  </div>
+  <a href="#contact" class="nav-cta">문의하기</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <p class="hero-kicker">WithKKey · 위드케이키 · Seoul</p>
+    <h1 class="hero-title">
+      나는<br>
+      <em>누구인가</em><br>
+      그 질문에서<br>시작됩니다
+    </h1>
+    <p class="hero-sub">
+      키캡 하나에 담긴 자기표현의 언어.<br>
+      딸깍 소리 하나가 열어주는 감각의 세계.<br>
+      꾸미와 함께 나를 찾는 여정을 시작하세요.
+    </p>
+    <div class="hero-actions">
+      <a href="#products" class="btn-fill">제품 살펴보기</a>
+      <a href="#brand" class="btn-bare">브랜드 스토리</a>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="hero-right-bg"></div>
+    <span class="hero-tag top">꾸미의 거울 나라</span>
+    <img src="kkumi_front.png" alt="꾸미 캐릭터" class="hero-kkumi-img">
+    <span class="hero-tag bot">A Journey to Find Yourself</span>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span>나를 찾는 여정</span><span class="dot">◆</span>
+    <span>꾸미 KKUMI</span><span class="dot">◆</span>
+    <span>픽캡 PICK CAP</span><span class="dot">◆</span>
+    <span>딸깍키트 Ddalkkak Kit</span><span class="dot">◆</span>
+    <span>국내 제조</span><span class="dot">◆</span>
+    <span>소셜 벤처 Social Venture</span><span class="dot">◆</span>
+    <span>서울 금천구 Seoul</span><span class="dot">◆</span>
+    <span>나를 찾는 여정</span><span class="dot">◆</span>
+    <span>꾸미 KKUMI</span><span class="dot">◆</span>
+    <span>픽캡 PICK CAP</span><span class="dot">◆</span>
+    <span>딸깍키트 Ddalkkak Kit</span><span class="dot">◆</span>
+    <span>국내 제조</span><span class="dot">◆</span>
+    <span>소셜 벤처 Social Venture</span><span class="dot">◆</span>
+    <span>서울 금천구 Seoul</span><span class="dot">◆</span>
+  </div>
+</div>
+
+<!-- BRAND -->
+<section class="philosophy-section" id="brand">
+  <div>
+    <p class="section-eyebrow">Brand Philosophy</p>
+    <h2 class="phil-title">거울 앞에 서는 것,<br>그것이 시작입니다</h2>
+    <p class="phil-body">꾸미는 성별이 없는 펭귄입니다. 거울 목걸이를 달고, 감정에 따라 배 색깔이 변하는 꾸미는 언제나 스스로를 들여다봅니다.</p>
+    <p class="phil-body">위드케이키는 키캡이라는 익숙한 소재에 새로운 의미를 담습니다. 자기표현의 도구로, 감각 훈련의 매개체로, 나다움을 탐험하는 여정의 동반자로.</p>
+    <p class="phil-body">국내 제조, 사회적 가치, 키드울트 감성. 세 가지가 하나로 만나는 곳이 위드케이키입니다.</p>
+  </div>
+  <div class="phil-visual">
+    <img src="kkumi_mirror.png" alt="꾸미가 거울을 보는 모습" class="phil-kkumi-img">
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section class="products-section" id="products">
+  <div class="inner">
+    <div class="products-header">
+      <div>
+        <p class="section-eyebrow">Product Lineup</p>
+        <h2 class="products-title">딸깍, 하는 순간<br>세상이 달라집니다</h2>
+      </div>
+      <p class="products-subtitle">두 가지 제품이<br>하나의 생태계를<br>이룹니다</p>
+    </div>
+    <div class="products-grid">
+
+      <!-- PICKCAP -->
+      <div class="product-card">
+        <div class="product-video-wrap lav-tint">
+          <video autoplay muted loop playsinline>
+            <source src="pickcap_video.mp4" type="video/mp4">
+          </video>
+          <div class="product-video-overlay"></div>
+        </div>
+        <div class="product-body">
+          <span class="product-pill">Lifestyle · Keyring</span>
+          <h3 class="product-name">꾸미 픽캡</h3>
+          <p class="product-name-en">PICK CAP Keycap Keyring</p>
+          <div class="product-rule"></div>
+          <p class="product-desc">키보드 키캡을 열쇠고리로 재탄생시킨 픽캡. 색상과 형태를 자유롭게 조합해 나만의 개성을 표현합니다. 아트박스, 영풍, 교보, 에버랜드에서 만날 수 있어요.</p>
+          <div class="product-tags">
+            <span class="tag">국내 제조</span>
+            <span class="tag">DIY 조합</span>
+            <span class="tag">특허 출원</span>
+            <span class="tag">키드울트</span>
+            <span class="tag">15+ 유통채널</span>
+          </div>
+          <a href="#contact" class="product-link">자세히 알아보기</a>
+        </div>
+      </div>
+
+      <!-- DDALKKAK KIT -->
+      <div class="product-card">
+        <div class="product-video-wrap sage-tint">
+          <video autoplay muted loop playsinline>
+            <source src="insta_video.mp4" type="video/mp4">
+          </video>
+          <div class="product-video-overlay"></div>
+        </div>
+        <div class="product-body">
+          <span class="product-pill">Therapeutic · B2B Kit</span>
+          <h3 class="product-name">딸깍키트</h3>
+          <p class="product-name-en">Ddalkkak Sensory Training Kit</p>
+          <div class="product-rule"></div>
+          <p class="product-desc">키캡의 촉각과 청각 자극을 활용한 감각통합·소근육 훈련 키트. 서울대 감정연구 기반 감정카드 시스템이 포함되어 발달·지체 장애 아동과 성인의 소통을 돕습니다.</p>
+          <div class="product-tags">
+            <span class="tag">AAC 기반</span>
+            <span class="tag">감각통합</span>
+            <span class="tag">SNU 감정연구</span>
+            <span class="tag">복지시설 B2B</span>
+            <span class="tag">오치국 박사 협업</span>
+          </div>
+          <a href="#contact" class="product-link">자세히 알아보기</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CHANNELS -->
+<section class="channels-section" id="channels">
+  <div class="channels-inner">
+    <div>
+      <p class="section-eyebrow">Distribution</p>
+      <h2 class="channels-title">전국 어디서나<br>꾸미를 만날 수 있어요</h2>
+      <p class="channels-text">런칭 5개월 만에 15개 이상의 주요 유통채널 입점 달성. B2C 리테일부터 B2B 복지시설까지, 꾸미는 계속 확장합니다.</p>
+      <div class="channels-stats">
+        <div class="cstat"><span class="cstat-n">15+</span><span class="cstat-l">유통 채널</span></div>
+        <div class="cstat"><span class="cstat-n">5mo</span><span class="cstat-l">달성 기간</span></div>
+        <div class="cstat"><span class="cstat-n">2종</span><span class="cstat-l">제품 라인</span></div>
+      </div>
+    </div>
+    <div class="channels-list">
+      <div class="ch-row"><span class="ch-name">아트박스</span><span class="ch-type"><span class="ch-dot dot-retail"></span>Retail</span></div>
+      <div class="ch-row"><span class="ch-name">영풍문고</span><span class="ch-type"><span class="ch-dot dot-retail"></span>Retail</span></div>
+      <div class="ch-row"><span class="ch-name">교보문고</span><span class="ch-type"><span class="ch-dot dot-retail"></span>Retail</span></div>
+      <div class="ch-row"><span class="ch-name">에버랜드</span><span class="ch-type"><span class="ch-dot dot-entertainment"></span>Entertainment</span></div>
+      <div class="ch-row"><span class="ch-name">복지관 · 특수학교</span><span class="ch-type"><span class="ch-dot dot-b2b"></span>B2B</span></div>
+      <div class="ch-row"><span class="ch-name">온라인 스토어</span><span class="ch-type"><span class="ch-dot dot-ecom"></span>E-Commerce</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- IMPACT -->
+<section class="impact-section" id="impact">
+  <div class="impact-inner">
+    <p class="impact-tag">Social Impact</p>
+    <h2 class="impact-title">수익이<br><em>사회로 흐릅니다</em></h2>
+    <div class="impact-rule"></div>
+    <p class="impact-text">위드케이키는 키링 판매 수익의 일부를 딸깍키트 기증 재원으로 활용합니다.<br>당신의 구매 하나가 누군가의 감각을 깨우고, 소통의 문을 여는 일에 함께합니다.</p>
+    <div class="impact-badge"><span class="badge-dot"></span>사회적기업 예비인증 추진 중 · ㈜위드케이키</div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section" id="contact">
+  <div>
+    <p class="section-eyebrow">Get in Touch</p>
+    <h2 class="contact-title">꾸미와 함께<br>나를 찾아볼까요</h2>
+    <p class="contact-sub">입점 문의, B2B 제안, 협업 아이디어 — 무엇이든 환영합니다.</p>
+    <a href="mailto:hello@withkkey.com" class="contact-email">hello@withkkey.com</a>
+  </div>
+  <div class="contact-links">
+    <a href="https://instagram.com/with_keiki_" target="_blank" class="contact-link">
+      <span class="contact-link-label">브랜드 인스타그램</span>
+      <span class="contact-link-val">@with_keiki_</span>
+      <span class="contact-link-arr">↗</span>
+    </a>
+    <a href="https://instagram.com/jieun_with_" target="_blank" class="contact-link">
+      <span class="contact-link-label">대표 인스타그램</span>
+      <span class="contact-link-val">@jieun_with_</span>
+      <span class="contact-link-arr">↗</span>
+    </a>
+    <a href="https://www.threads.net/@jieun_with_" target="_blank" class="contact-link">
+      <span class="contact-link-label">Threads</span>
+      <span class="contact-link-val">@jieun_with_</span>
+      <span class="contact-link-arr">↗</span>
+    </a>
+    <a href="mailto:hello@withkkey.com" class="contact-link">
+      <span class="contact-link-label">이메일</span>
+      <span class="contact-link-val">hello@withkkey.com</span>
+      <span class="contact-link-arr">↗</span>
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <img src="kkummi_logo.png" alt="KKUMMI">
+  </div>
+  <span class="footer-mid">서울특별시 금천구 · ㈜위드케이키 · © 2025 All rights reserved.</span>
+  <div class="footer-right">
+    <a href="https://instagram.com/with_keiki_" target="_blank">Instagram</a>
+    <a href="https://www.threads.net/@jieun_with_" target="_blank">Threads</a>
+    <a href="mailto:hello@withkkey.com">Contact</a>
+  </div>
+</footer>
+
+</body>
+</html>
