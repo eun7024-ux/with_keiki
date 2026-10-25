@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>위드케이키 회계</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="dot"></span><b id="companyName">위드케이키</b> 회계</div>
+  <nav id="tabs">
+    <button data-tab="dashboard" class="on">대시보드</button>
+    <button data-tab="sale">매출</button>
+    <button data-tab="purchase">매입</button>
+    <button data-tab="expense">비용</button>
+    <button data-tab="products">품목·단가</button>
+    <button data-tab="clients">거래처</button>
+    <button data-tab="import">자동 입력</button>
+    <button data-tab="settings">설정</button>
+  </nav>
+</header>
+
+<div class="period">
+  <div class="quick">
+    <button data-range="today">오늘</button>
+    <button data-range="month" class="on">이번 달</button>
+    <button data-range="lastmonth">지난 달</button>
+    <button data-range="quarter">이번 분기</button>
+    <button data-range="year">올해</button>
+  </div>
+  <label>기간 <input type="date" id="from"> ~ <input type="date" id="to"></label>
+</div>
+
+<main>
+<!-- 대시보드 -->
+<section id="tab-dashboard" class="tab on">
+  <div class="kpis" id="kpis"></div>
+  <div class="grid2">
+    <div class="card">
+      <h3>월별 매출 · 순이익</h3>
+      <div id="chart" class="chart"></div>
+    </div>
+    <div class="card">
+      <h3>손익 요약 <small id="costModeNote"></small></h3>
+      <table class="pl" id="pl"></table>
+      <p class="warn" id="costWarn"></p>
+    </div>
+  </div>
+  <div class="grid3">
+    <div class="card"><h3>거래처별 매출 TOP 10</h3><table id="topClients"></table></div>
+    <div class="card"><h3>품목별 매출 · 마진</h3><table id="topProducts"></table></div>
+    <div class="card"><h3>미수금 (입금 안 된 매출, 전체 기간)</h3><table id="receivables"></table></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>일별 매출</h3><table id="daily"></table></div>
+    <div class="card"><h3>비용 계정별</h3><table id="expCats"></table></div>
+  </div>
+</section>
+
+<!-- 매출 / 매입 (같은 화면 구조) -->
+<section id="tab-entries" class="tab">
+  <div class="card">
+    <h3 id="entryFormTitle">매출 입력</h3>
+    <form id="entryForm" class="form-row">
+      <input type="hidden" name="id">
+      <label>일자<input type="date" name="date" required></label>
+      <label>거래처<input name="client" list="clientList" placeholder="거래처명" autocomplete="off"></label>
+      <label>품목<input name="item" list="productList" placeholder="품목명" autocomplete="off"></label>
+      <label class="s">수량<input name="qty" inputmode="decimal" value="1"></label>
+      <label>단가<input name="unit_price" inputmode="numeric" placeholder="자동"></label>
+      <label>공급가액<input name="supply" inputmode="numeric" placeholder="자동"></label>
+      <label>부가세<input name="vat" inputmode="numeric" placeholder="10% 자동"></label>
+      <label class="chk"><input type="checkbox" name="vat_free"> 면세</label>
+      <label class="chk"><input type="checkbox" name="paid"> <span id="paidLabel">입금완료</span></label>
+      <label>주문번호<input name="order_no"></label>
+      <label class="w">비고<input name="memo"></label>
+      <div class="btns"><button class="primary" type="submit">저장</button><button type="button" id="entryReset">새로 입력</button></div>
+    </form>
+    <p class="hint">단가를 비워두면 <b>거래처별 단가 → 품목 기본단가</b> 순으로 자동 적용됩니다. 처음 입력하는 품목·거래처는 자동 등록됩니다.</p>
+  </div>
+  <div class="card">
+    <div class="toolbar">
+      <input id="entrySearch" placeholder="거래처·품목·주문번호 검색">
+      <label class="chk"><input type="checkbox" id="unpaidOnly"> <span id="unpaidLabel">미입금만</span></label>
+      <span class="spacer"></span>
+      <button id="markPaid">선택 → <span id="markPaidLabel">입금완료</span></button>
+      <button id="markUnpaid">선택 → 미완료</button>
+      <button id="entryExport">CSV 내보내기</button>
+    </div>
+    <div class="totals" id="entryTotals"></div>
+    <div class="scroll"><table class="list" id="entryTable"></table></div>
+  </div>
+</section>
+
+<!-- 비용 -->
+<section id="tab-expense" class="tab">
+  <div class="card">
+    <h3>비용(판관비) 입력</h3>
+    <form id="expenseForm" class="form-row">
+      <input type="hidden" name="id">
+      <label>일자<input type="date" name="date" required></label>
+      <label>계정<select name="category" id="expCategory"></select></label>
+      <label class="w">내용<input name="description" placeholder="예: 10월 사무실 임대료"></label>
+      <label>금액(공급가)<input name="amount" inputmode="numeric" required></label>
+      <label>부가세<input name="vat" inputmode="numeric" placeholder="세금계산서 받은 경우"></label>
+      <label>비고<input name="memo"></label>
+      <div class="btns"><button class="primary" type="submit">저장</button><button type="button" id="expenseReset">새로 입력</button></div>
+    </form>
+  </div>
+  <div class="card">
+    <div class="toolbar"><span class="totals" id="expenseTotals"></span><span class="spacer"></span><button id="expenseExport">CSV 내보내기</button></div>
+    <div class="scroll"><table class="list" id="expenseTable"></table></div>
+  </div>
+</section>
+
+<!-- 품목·단가 -->
+<section id="tab-products" class="tab">
+  <div class="card">
+    <h3>품목 / 단가표</h3>
+    <form id="productForm" class="form-row">
+      <input type="hidden" name="id">
+      <label>품목코드<input name="code"></label>
+      <label class="w">품목명<input name="name" required></label>
+      <label class="s">단위<input name="unit" value="개"></label>
+      <label>판매단가<input name="sale_price" inputmode="numeric"></label>
+      <label>원가(매입단가)<input name="cost_price" inputmode="numeric"></label>
+      <label>비고<input name="memo"></label>
+      <div class="btns"><button class="primary" type="submit">저장</button><button type="button" id="productReset">새로 입력</button></div>
+    </form>
+    <p class="hint">금액은 모두 <b>VAT 별도(공급가)</b> 기준입니다. 원가를 넣어두면 매출이 들어올 때마다 품목별 마진과 순이익이 자동 계산됩니다.</p>
+    <div class="scroll"><table class="list" id="productTable"></table></div>
+  </div>
+  <div class="card">
+    <h3>거래처별 특별단가</h3>
+    <form id="cpForm" class="form-row">
+      <label class="w">거래처<select name="client_id" id="cpClient"></select></label>
+      <label class="w">품목<select name="product_id" id="cpProduct"></select></label>
+      <label>단가<input name="price" inputmode="numeric" required></label>
+      <div class="btns"><button class="primary" type="submit">저장</button></div>
+    </form>
+    <div class="scroll"><table class="list" id="cpTable"></table></div>
+  </div>
+</section>
+
+<!-- 거래처 -->
+<section id="tab-clients" class="tab">
+  <div class="card">
+    <h3>거래처</h3>
+    <form id="clientForm" class="form-row">
+      <input type="hidden" name="id">
+      <label class="w">상호<input name="name" required></label>
+      <label>구분<select name="type"><option value="customer">매출처</option><option value="vendor">매입처</option><option value="both">매출+매입</option></select></label>
+      <label>사업자번호<input name="biz_no"></label>
+      <label>연락처<input name="contact"></label>
+      <label class="w">비고<input name="memo"></label>
+      <div class="btns"><button class="primary" type="submit">저장</button><button type="button" id="clientReset">새로 입력</button></div>
+    </form>
+    <div class="scroll"><table class="list" id="clientTable"></table></div>
+  </div>
+</section>
+
+<!-- 자동 입력 -->
+<section id="tab-import" class="tab">
+  <div class="card">
+    <h3>① 파일 올리기 (B2B 주문/매출 엑셀·CSV)</h3>
+    <div class="form-row">
+      <label>구분<select id="impKind"><option value="sale">매출</option><option value="purchase">매입</option></select></label>
+      <label class="w">파일<input type="file" id="impFile" accept=".csv,.xlsx,.xlsm,.txt,.tsv"></label>
+    </div>
+    <div id="impPreview"></div>
+  </div>
+  <div class="card">
+    <h3>② 폴더에 넣으면 자동 입력</h3>
+    <p>B2B 사이트에서 매일 받는 파일을 아래 폴더에 저장(또는 다운로드 위치로 지정)하면, 1분마다 자동으로 읽어서 장부에 넣고 <code>done</code> 폴더로 옮깁니다. 같은 파일을 두 번 넣어도 <b>주문번호 기준으로 중복 등록되지 않습니다.</b></p>
+    <ul class="paths"><li>매출: <code>accounting/inbox/매출/</code></li><li>매입: <code>accounting/inbox/매입/</code></li></ul>
+    <button id="scanNow">지금 폴더 확인</button>
+  </div>
+  <div class="card">
+    <h3>③ API로 실시간 연동 (개발자용)</h3>
+    <p>쇼핑몰/ERP/B2B 플랫폼이 웹훅을 지원하면 주문이 생길 때마다 아래 주소로 보내게 설정하세요.</p>
+    <pre id="apiExample"></pre>
+  </div>
+  <div class="card">
+    <h3>가져오기 기록</h3>
+    <div class="scroll"><table class="list" id="importLog"></table></div>
+  </div>
+</section>
+
+<!-- 설정 -->
+<section id="tab-settings" class="tab">
+  <div class="card">
+    <h3>설정</h3>
+    <form id="settingsForm" class="form-col">
+      <label>회사명<input name="company_name"></label>
+      <label>부가세율(%)<input name="vat_rate" inputmode="decimal"></label>
+      <label>매출원가 계산 방식
+        <select name="cost_mode">
+          <option value="product">판매수량 × 품목 원가 (권장: 품목별 마진 확인 가능)</option>
+          <option value="purchase">기간 내 매입 합계 (원가를 따로 관리하지 않을 때)</option>
+        </select>
+      </label>
+      <label>비용 계정 (쉼표로 구분)<input name="expense_categories"></label>
+      <div class="btns"><button class="primary" type="submit">저장</button></div>
+    </form>
+  </div>
+  <div class="card">
+    <h3>API 키</h3>
+    <p><code id="apiKey"></code></p>
+    <button id="regenKey">API 키 새로 만들기</button>
+  </div>
+  <div class="card">
+    <h3>내보내기 · 백업</h3>
+    <p>세무사에게 보낼 자료나 백업을 받을 수 있습니다. (선택한 기간 기준)</p>
+    <div class="btns">
+      <button data-export="pl">손익계산서 CSV</button>
+      <button data-export="sale">매출 CSV</button>
+      <button data-export="purchase">매입 CSV</button>
+      <button data-export="expense">비용 CSV</button>
+      <button id="backup">전체 백업(.sql)</button>
+    </div>
+  </div>
+</section>
+</main>
+
+<datalist id="clientList"></datalist>
+<datalist id="productList"></datalist>
+<div id="toast"></div>
+<script src="/app.js"></script>
+</body>
+</html>
