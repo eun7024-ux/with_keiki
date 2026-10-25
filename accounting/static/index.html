@@ -3,19 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>위드케이키 회계</title>
+<title>위드케이키 ERP</title>
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 <header class="top">
-  <div class="brand"><span class="dot"></span><b id="companyName">위드케이키</b> 회계</div>
+  <div class="brand"><span class="dot"></span><b id="companyName">위드케이키</b> ERP</div>
   <nav id="tabs">
     <button data-tab="dashboard" class="on">대시보드</button>
+    <span class="sep"></span>
+    <button data-tab="orders">주문·출고</button>
     <button data-tab="sale">매출</button>
+    <span class="sep"></span>
+    <button data-tab="pos">발주·입고</button>
     <button data-tab="purchase">매입</button>
+    <span class="sep"></span>
+    <button data-tab="stock">재고</button>
+    <button data-tab="production">생산</button>
+    <span class="sep"></span>
     <button data-tab="expense">비용</button>
     <button data-tab="products">품목·단가</button>
     <button data-tab="clients">거래처</button>
+    <span class="sep"></span>
     <button data-tab="import">자동 입력</button>
     <button data-tab="settings">설정</button>
   </nav>
@@ -35,6 +44,7 @@
 <main>
 <!-- 대시보드 -->
 <section id="tab-dashboard" class="tab on">
+  <div class="todo" id="todo"></div>
   <div class="kpis" id="kpis"></div>
   <div class="grid2">
     <div class="card">
@@ -55,6 +65,115 @@
   <div class="grid2">
     <div class="card"><h3>일별 매출</h3><table id="daily"></table></div>
     <div class="card"><h3>비용 계정별</h3><table id="expCats"></table></div>
+  </div>
+</section>
+
+<!-- 주문·출고 / 발주·입고 (같은 화면 구조) -->
+<section id="tab-orders" class="tab">
+  <div class="card" id="orderEditor" hidden>
+    <h3 id="orderEditorTitle">새 주문</h3>
+    <form id="orderForm">
+      <input type="hidden" name="id">
+      <div class="form-row">
+        <label>주문일<input type="date" name="date" id="oDate" required></label>
+        <label class="w"><span id="oClientLabel">거래처</span><input name="client" id="oClient" list="clientList" autocomplete="off" required></label>
+        <label><span id="oDueLabel">납기(출고 예정)</span><input type="date" name="due_date" id="oDue"></label>
+        <label id="oStatusWrap">구분<select name="status" id="oStatus"><option value="received">주문 접수</option><option value="quote">견적</option></select></label>
+        <label>주문번호<input name="order_no" id="oNo" placeholder="비우면 자동"></label>
+        <label class="w">비고<input name="memo" id="oMemo"></label>
+      </div>
+      <div class="scroll"><table class="list lines" id="oLines"></table></div>
+      <div class="btns lines-foot">
+        <button type="button" id="oAddLine">+ 품목 추가</button>
+        <span class="spacer"></span>
+        <span class="totals" id="oTotal"></span>
+      </div>
+      <div class="btns"><button class="primary" type="submit">저장</button><button type="button" id="oCancel">닫기</button></div>
+    </form>
+  </div>
+  <div class="card" id="completePanel" hidden>
+    <h3 id="completeTitle">출고 처리</h3>
+    <form id="completeForm" class="form-row">
+      <input type="hidden" name="id">
+      <label><span id="cDateLabel">출고일</span><input type="date" name="date" id="cDate" required></label>
+      <label id="cCourierWrap">택배사<input name="courier" id="cCourier" list="courierList"></label>
+      <label id="cTrackWrap" class="w">송장번호<input name="tracking_no" id="cTrack"></label>
+      <label class="chk"><input type="checkbox" name="paid" id="cPaid"> <span id="cPaidLabel">입금완료</span></label>
+      <div class="btns"><button class="primary" type="submit" id="cSubmit">출고 완료</button><button type="button" id="cCancel">닫기</button></div>
+    </form>
+    <p class="hint" id="completeHint"></p>
+  </div>
+  <div class="card">
+    <div class="toolbar">
+      <div class="chips" id="orderFilter"></div>
+      <input id="orderSearch" placeholder="거래처·주문번호·송장 검색">
+      <span class="spacer"></span>
+      <button class="primary" id="newOrder">+ 새 주문</button>
+    </div>
+    <div class="totals" id="orderTotals"></div>
+    <div class="scroll"><table class="list" id="orderTable"></table></div>
+  </div>
+</section>
+
+<!-- 재고 -->
+<section id="tab-stock" class="tab">
+  <div class="card" id="adjustPanel" hidden>
+    <h3>재고 실사 · <span id="adjName"></span></h3>
+    <form id="adjustForm" class="form-row">
+      <input type="hidden" name="product_id">
+      <label>전산 재고<input id="adjCurrent" disabled></label>
+      <label>실제 수량<input name="actual" id="adjActual" inputmode="decimal" required></label>
+      <label>일자<input type="date" name="date" id="adjDate"></label>
+      <label class="w">메모<input name="memo" id="adjMemo" placeholder="예: 월말 실사, 파손 3개"></label>
+      <div class="btns"><button class="primary" type="submit">맞추기</button><button type="button" id="adjCancel">닫기</button></div>
+    </form>
+  </div>
+  <div class="card" id="historyPanel" hidden>
+    <div class="toolbar"><h3 id="histTitle">입출고 내역</h3><span class="spacer"></span><button type="button" id="histClose">닫기</button></div>
+    <div class="scroll"><table class="list" id="histTable"></table></div>
+  </div>
+  <div class="card">
+    <div class="toolbar">
+      <div class="chips" id="stockFilter"></div>
+      <input id="stockSearch" placeholder="품목 검색">
+      <span class="spacer"></span>
+      <span class="totals" id="stockTotals"></span>
+    </div>
+    <div class="scroll"><table class="list" id="stockTable"></table></div>
+    <p class="hint">재고 = 매입·입고 수량 − 매출·출고 수량 ± 생산 · 실사 조정. 처음 쓰실 때 품목마다 <b>[실사]</b>로 지금 창고에 있는 수량을 한 번 맞춰 주세요. 출고 대기는 아직 출고하지 않은 주문 수량이고, 가용 = 현재고 − 출고 대기입니다.</p>
+  </div>
+</section>
+
+<!-- 생산 -->
+<section id="tab-production" class="tab">
+  <div class="grid2 even">
+    <div class="card">
+      <h3>BOM (완제품 1개에 들어가는 자재)</h3>
+      <div class="form-row"><label class="w">완제품<select id="bomProduct"></select></label></div>
+      <div class="scroll"><table class="list" id="bomTable"></table></div>
+      <form id="bomForm" class="form-row">
+        <label class="w">자재<select name="material_id" id="bomMaterial"></select></label>
+        <label class="s">수량<input name="qty" id="bomQty" inputmode="decimal" required></label>
+        <div class="btns"><button type="submit">자재 추가</button></div>
+      </form>
+      <p class="hint" id="bomCost"></p>
+    </div>
+    <div class="card">
+      <h3>생산 등록</h3>
+      <form id="prodForm" class="form-row">
+        <label>일자<input type="date" name="date" id="pDate" required></label>
+        <label class="w">완제품<select name="product_id" id="pProduct"></select></label>
+        <label class="s">수량<input name="qty" id="pQty" inputmode="decimal" required></label>
+        <label class="w">메모<input name="memo" id="pMemo"></label>
+        <div class="btns"><button class="primary" type="submit">생산 완료 등록</button></div>
+      </form>
+      <div class="scroll"><table class="list" id="planTable"></table></div>
+      <p class="hint">등록하면 완제품 재고가 늘고, BOM에 적힌 자재가 수량만큼 자동으로 빠집니다.</p>
+    </div>
+  </div>
+  <div class="card">
+    <h3>생산 내역 <small>선택한 기간</small></h3>
+    <div class="scroll"><table class="list" id="prodTable"></table></div>
   </div>
 </section>
 
@@ -123,8 +242,10 @@
       <label>품목코드<input name="code"></label>
       <label class="w">품목명<input name="name" required></label>
       <label class="s">단위<input name="unit" value="개"></label>
+      <label>구분<select name="kind"><option value="product">완제품</option><option value="goods">상품(사서 판매)</option><option value="material">자재·부자재</option></select></label>
       <label>판매단가<input name="sale_price" inputmode="numeric"></label>
       <label>원가(매입단가)<input name="cost_price" inputmode="numeric"></label>
+      <label class="s">안전재고<input name="safety_stock" inputmode="decimal" placeholder="0"></label>
       <label>비고<input name="memo"></label>
       <div class="btns"><button class="primary" type="submit">저장</button><button type="button" id="productReset">새로 입력</button></div>
     </form>
@@ -165,7 +286,7 @@
   <div class="card">
     <h3>① 파일 올리기 (B2B 주문/매출 엑셀·CSV)</h3>
     <div class="form-row">
-      <label>구분<select id="impKind"><option value="sale">매출</option><option value="purchase">매입</option></select></label>
+      <label class="w">가져올 곳<select id="impKind"><option value="order">주문 (출고 대기로 접수)</option><option value="sale">매출 (이미 출고된 건)</option><option value="purchase">매입</option></select></label>
       <label class="w">파일<input type="file" id="impFile" accept=".csv,.xlsx,.xlsm,.txt,.tsv"></label>
     </div>
     <div id="impPreview"></div>
@@ -173,7 +294,7 @@
   <div class="card">
     <h3>② 폴더에 넣으면 자동 입력</h3>
     <p>B2B 사이트에서 매일 받는 파일을 아래 폴더에 저장(또는 다운로드 위치로 지정)하면, 1분마다 자동으로 읽어서 장부에 넣고 <code>done</code> 폴더로 옮깁니다. 같은 파일을 두 번 넣어도 <b>주문번호 기준으로 중복 등록되지 않습니다.</b></p>
-    <ul class="paths"><li>매출: <code>accounting/inbox/매출/</code></li><li>매입: <code>accounting/inbox/매입/</code></li></ul>
+    <ul class="paths"><li>주문 (출고 대기): <code>accounting/inbox/주문/</code></li><li>매출 (출고 완료): <code>accounting/inbox/매출/</code></li><li>매입: <code>accounting/inbox/매입/</code></li></ul>
     <button id="scanNow">지금 폴더 확인</button>
   </div>
   <div class="card">
@@ -201,6 +322,14 @@
         </select>
       </label>
       <label>비용 계정 (쉼표로 구분)<input name="expense_categories"></label>
+      <h4>문서에 찍히는 회사 정보 (거래명세서·견적서·발주서)</h4>
+      <label>사업자등록번호<input name="biz_no" placeholder="000-00-00000"></label>
+      <label>대표자<input name="ceo"></label>
+      <label>주소<input name="address"></label>
+      <label>연락처<input name="phone"></label>
+      <label>업태 / 종목<input name="biz_type" placeholder="예: 제조, 도소매 / 문구"></label>
+      <label>입금 계좌<input name="bank_account" placeholder="예: 국민은행 000-000-000000 (예금주)"></label>
+      <label>문서 하단 문구<input name="doc_note" placeholder="예: 반품은 수령 후 7일 이내 연락 바랍니다."></label>
       <div class="btns"><button class="primary" type="submit">저장</button></div>
     </form>
   </div>
@@ -225,6 +354,7 @@
 
 <datalist id="clientList"></datalist>
 <datalist id="productList"></datalist>
+<datalist id="courierList"><option value="CJ대한통운"><option value="롯데택배"><option value="한진택배"><option value="우체국택배"><option value="로젠택배"><option value="직접 배송"><option value="퀵"></datalist>
 <div id="toast"></div>
 <script src="/app.js"></script>
 </body>

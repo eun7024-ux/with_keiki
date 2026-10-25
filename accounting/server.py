@@ -25,6 +25,8 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
+import erp
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 DB_PATH = os.path.join(BASE_DIR, "data", "accounting.db")
@@ -136,6 +138,7 @@ def init_db(path=None):
             conn.execute("INSERT OR IGNORE INTO settings(key, value) VALUES (?, ?)", (k, v))
         conn.execute("INSERT OR IGNORE INTO settings(key, value) VALUES ('api_key', ?)",
                      (secrets.token_urlsafe(24),))
+        erp.init(conn)
 
 
 def get_settings(conn):
@@ -481,16 +484,19 @@ def import_file(conn, kind, filename, data, source, mapping=None, preview=False)
                             for k, v in r.items()} for r in raw_rows[:8]]}
     if not any(f in mapping for f in ("supply", "total", "unit_price", "item", "code")):
         raise ValueError("금액 또는 품목 열을 찾지 못했습니다. 열 지정을 확인해 주세요.")
-    res = ingest_rows(conn, kind, raw_rows, source, default_date, filename)
+    if kind == "order":
+        res = erp.ingest_orders(conn, raw_rows, source, default_date, filename)
+    else:
+        res = ingest_rows(conn, kind, raw_rows, source, default_date, filename)
     res["note"] = note
     return res
 
 
 def scan_inbox(db_path=None, inbox=None):
-    """inbox/매출, inbox/매입 폴더에 떨어진 파일을 자동으로 가져와 done/ 또는 error/ 로 옮긴다."""
+    """inbox/주문, inbox/매출, inbox/매입 폴더에 떨어진 파일을 자동으로 가져와 done/ 또는 error/ 로 옮긴다."""
     inbox = inbox or INBOX_DIR
     results = []
-    for kind, sub in (("sale", "매출"), ("purchase", "매입")):
+    for kind, sub in (("order", "주문"), ("sale", "매출"), ("purchase", "매입")):
         d = os.path.join(inbox, sub)
         os.makedirs(os.path.join(d, "done"), exist_ok=True)
         os.makedirs(os.path.join(d, "error"), exist_ok=True)
@@ -703,6 +709,11 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             return
         try:
+            if path.startswith("/print/"):
+                with db(self.db_path) as conn:
+                    d_from, d_to = q.get("from") or month_range()[0], q.get("to") or month_range()[1]
+                    page = erp.render_print(conn, path.strip("/").split("/")[1:], q, d_from, d_to)
+                return self.send_bytes(page.encode("utf-8"), "text/html; charset=utf-8")
             if not path.startswith("/api/"):
                 if method != "GET":
                     raise ApiError(405, "허용되지 않는 요청")
@@ -751,14 +762,14 @@ class Handler(BaseHTTPRequestHandler):
         d_to = q.get("to") or month_range()[1]
 
         if res == "summary" and method == "GET":
-            return summary(conn, d_from, d_to)
+            return {**summary(conn, d_from, d_to), **erp.dashboard(conn)}
 
         if res == "settings":
             if method == "GET":
                 return get_settings(conn)
             if method == "PUT":
                 body = self.read_json()
-                for k in ("company_name", "vat_rate", "cost_mode", "expense_categories"):
+                for k in ("company_name", "vat_rate", "cost_mode", "expense_categories") + tuple(erp.SETTINGS):
                     if k in body:
                         conn.execute("UPDATE settings SET value = ? WHERE key = ?", (str(body[k]), k))
                 if body.get("regenerate_api_key"):
@@ -770,9 +781,15 @@ class Handler(BaseHTTPRequestHandler):
                              "SELECT c.*, (SELECT SUM(total) FROM entries e WHERE e.client_id=c.id AND e.kind='sale' AND e.paid=0) receivable "
                              "FROM clients c ORDER BY name", required="name")
         if res == "products":
-            return self.crud(conn, method, rid, "products", ("code", "name", "unit", "sale_price", "cost_price", "memo"),
-                             "SELECT * FROM products ORDER BY name", required="name",
-                             ints=("sale_price", "cost_price"))
+            if method in ("POST", "PUT"):
+                self._body = self.read_json()
+                if self._body.get("kind") not in erp.PRODUCT_KINDS:
+                    self._body["kind"] = "product"
+            return self.crud(conn, method, rid, "products",
+                             ("code", "name", "unit", "kind", "sale_price", "cost_price", "safety_stock", "memo"),
+                             "SELECT p.*, (SELECT SUM(b.qty * m.cost_price) FROM bom b JOIN products m ON m.id = b.material_id"
+                             " WHERE b.product_id = p.id) bom_cost FROM products p ORDER BY p.name", required="name",
+                             ints=("sale_price", "cost_price"), floats=("safety_stock",))
         if res == "client-prices":
             if method == "GET":
                 return rows(conn.execute("""SELECT cp.*, c.name client_name, p.name product_name, p.sale_price
@@ -822,7 +839,7 @@ class Handler(BaseHTTPRequestHandler):
         if res == "import" and method == "POST":
             b = self.read_json()
             kind = b.get("kind", "sale")
-            if kind not in KINDS:
+            if kind not in KINDS + ("order",):
                 raise ValueError("kind 오류")
             try:
                 data = base64.b64decode(b.get("content_b64") or "")
@@ -846,9 +863,11 @@ class Handler(BaseHTTPRequestHandler):
                 raise ApiError(401, "API 키가 올바르지 않습니다.")
             b = self.read_json()
             kind = b.get("kind", "sale")
-            if kind not in KINDS:
-                raise ValueError("kind 는 sale 또는 purchase")
+            if kind not in KINDS + ("order",):
+                raise ValueError("kind 는 sale, purchase 또는 order")
             items = b.get("rows") if isinstance(b.get("rows"), list) else [b]
+            if kind == "order":
+                return erp.ingest_orders(conn, items, "api", dt.date.today().isoformat(), b.get("source_name") or "API")
             return ingest_rows(conn, kind, items, "api", dt.date.today().isoformat(), b.get("source_name") or "API")
 
         if res == "export" and method == "GET":
@@ -861,16 +880,19 @@ class Handler(BaseHTTPRequestHandler):
             self.send_bytes(data, "application/sql", "accounting-backup-%s.sql" % dt.date.today().isoformat())
             return None
 
+        result = erp.route(self, conn, method, parts, q, d_from, d_to)
+        if result is not erp.NOT_FOUND:
+            return result
         raise ApiError(404, "없는 API: %s %s" % (method, path))
 
-    def crud(self, conn, method, rid, table, fields, list_sql, required=None, ints=()):
+    def crud(self, conn, method, rid, table, fields, list_sql, required=None, ints=(), floats=()):
         if method == "GET":
             return rows(conn.execute(list_sql))
         if method == "DELETE" and rid:
             conn.execute("DELETE FROM %s WHERE id = ?" % table, (rid,))
             return {"ok": True}
         if method in ("POST", "PUT"):
-            b = self.read_json()
+            b = getattr(self, "_body", None) or self.read_json()
             if required and not str(b.get(required) or "").strip():
                 raise ValueError("이름을 입력하세요.")
             vals = []
@@ -878,6 +900,8 @@ class Handler(BaseHTTPRequestHandler):
                 v = b.get(f)
                 if f in ints:
                     v = won(parse_number(v))
+                elif f in floats:
+                    v = parse_number(v) or 0
                 else:
                     v = "" if v is None else str(v).strip()
                 vals.append(v)
@@ -955,6 +979,9 @@ class Handler(BaseHTTPRequestHandler):
         data = buf.getvalue().encode("utf-8-sig")  # 엑셀에서 한글이 깨지지 않도록 BOM 포함
         self.send_bytes(data, "text/csv; charset=utf-8", "%s_%s_%s.csv" % (label, d_from, d_to))
         return None
+
+
+erp.bind(sys.modules[__name__])
 
 
 def make_server(host, port, db_path=None, password=None):

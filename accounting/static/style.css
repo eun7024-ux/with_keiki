@@ -84,3 +84,32 @@ pre code { background: none; }
 #toast.show { opacity: 1; }
 #toast.err { background: var(--loss); }
 @media (max-width: 640px) { .top, .period, main { padding-left: 12px; padding-right: 12px; } .form-row label, .form-row label.w { width: 100%; } }
+
+/* ERP 화면 */
+nav .sep { width: 1px; background: var(--line); margin: 6px 4px; }
+.grid2.even { grid-template-columns: 1fr 1fr; }
+@media (max-width: 1000px) { .grid2.even { grid-template-columns: 1fr; } }
+.chips { display: flex; gap: 4px; flex-wrap: wrap; }
+.chips button { padding: 5px 11px; border-radius: 999px; font-size: 13px; }
+.chips button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.chips button b { font-weight: 600; margin-left: 3px; }
+.tag.warn { background: #FBF1DC; color: #8A6212; }
+.tag.done { background: var(--line); color: var(--mid); }
+td.late { color: var(--loss); font-weight: 600; }
+.lines td { padding: 4px 6px; }
+.lines input { width: 100%; }
+.lines td.item { min-width: 220px; }
+.lines td.q input { width: 80px; } .lines td.p input { width: 110px; }
+.lines-foot { margin: 8px 0 14px; align-items: center; }
+.lines .x { border: 0; background: none; color: var(--faint); font-size: 18px; padding: 0 6px; }
+.lines .x:hover { color: var(--loss); }
+.todo { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.todo button { text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+.todo button:hover { border-color: var(--accent); }
+.todo .l { font-size: 12px; color: var(--mid); }
+.todo .v { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.todo .s { font-size: 12px; color: var(--faint); }
+.todo .alert .v { color: var(--loss); }
+.form-col h4 { margin: 10px 0 0; font-size: 13px; }
+.toolbar h3 { margin: 0; }
+.act button + button { margin-left: 2px; }

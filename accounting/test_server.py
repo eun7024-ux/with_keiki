@@ -15,7 +15,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SAMPLE = os.path.join(HERE, "sample", "b2b_매출_20261024.csv")
 
 
-class AccountingTest(unittest.TestCase):
+class ServerCase(unittest.TestCase):
+    """임시 DB로 서버를 띄우는 공통 준비 (test_erp 에서도 사용)"""
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.db = os.path.join(self.tmp.name, "t.db")
@@ -45,6 +47,8 @@ class AccountingTest(unittest.TestCase):
         return self.call("import", {"kind": "sale", "filename": os.path.basename(SAMPLE),
                                     "content_b64": base64.b64encode(raw).decode(), "preview": preview})
 
+
+class AccountingTest(ServerCase):
     def test_parsers(self):
         self.assertEqual(server.parse_number("1,234,000원"), 1234000)
         self.assertEqual(server.parse_number("(3,000)"), -3000)
