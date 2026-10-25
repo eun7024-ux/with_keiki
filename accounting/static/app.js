@@ -122,7 +122,8 @@ function drawChart(months) {
   const y = v => pt + (max - v) / span * (H - pt - pb);
   const bw = (W - pl - pr) / months.length;
   const barW = Math.min(28, bw * 0.34);
-  const ticks = [max, (max + min) / 2, min, 0].filter((v, i, a) => a.indexOf(v) === i);
+  // 0 기준선 가까이 붙는 눈금 글자는 겹치므로 뺀다
+  const ticks = [0, max, (max + min) / 2, min].filter((v, i, a) => a.indexOf(v) === i && (v === 0 || Math.abs(y(v) - y(0)) > 14));
   const short = v => Math.abs(v) >= 1e8 ? (v / 1e8).toFixed(1) + '억' : Math.abs(v) >= 1e4 ? Math.round(v / 1e4).toLocaleString() + '만' : Math.round(v);
   let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="월별 매출과 순이익">`;
   ticks.forEach(t => svg += `<line x1="${pl}" x2="${W - pr}" y1="${y(t)}" y2="${y(t)}" stroke="#E6E2DA" ${t === 0 ? 'stroke-width="1.5" stroke="#A5A29C"' : ''}/><text x="${pl - 6}" y="${y(t) + 4}" text-anchor="end" font-size="11" fill="#6B6B6B">${short(t)}</text>`);
